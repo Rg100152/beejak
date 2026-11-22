@@ -1,0 +1,11 @@
+<div class="toast-stack no-print" id="toast-stack" aria-live="polite">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="toast toast-{{ category|default('info') }}">
+        <span class="toast-icon">{{ '✓' if category == 'success' else ('!' if category == 'error' else 'i') }}</span>
+        <span>{{ message }}</span>
+        <button class="toast-close" aria-label="Dismiss">×</button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+</div>

@@ -1,0 +1,23 @@
+<header class="topbar no-print">
+  <div class="topbar-left">
+    <button class="icon-btn rail-toggle" id="rail-toggle" aria-label="Toggle navigation">☰</button>
+    <div class="topbar-title">
+      <span class="eyebrow">FINTECH BILLING WORKSPACE</span>
+      <h1>{% block page_title %}Beejak Studio{% endblock %}</h1>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-search">
+      <span class="search-icon">⌕</span>
+      <form method="get" action="{{ url_for('dashboard.index') }}">
+        <input type="search" name="q" value="{{ search|default('') }}" placeholder="Search invoice or client…" aria-label="Search invoices">
+      </form>
+    </div>
+    <button class="icon-btn" id="theme-toggle" title="Toggle display density">◐</button>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('invoices.create') }}">＋ New Invoice</a>
+    <div class="topbar-avatar" title="{{ dev_name }} · {{ dev_location }}">
+      <img src="{{ url_for('static', filename='assets/avatar.jpg') }}" alt="{{ dev_name }}">
+      <span class="online-dot"></span>
+    </div>
+  </div>
+</header>

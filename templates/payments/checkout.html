@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Beejak Pay · Checkout {{ invoice['invoice_no'] }}{% endblock %}
+{% block page_title %}Beejak Pay Sandbox{% endblock %}
+{% block body_class %} checkout-body{% endblock %}
+
+{% block content %}
+<div class="checkout-layout">
+  <section class="checkout-card no-print" id="checkout-card">
+    <div class="checkout-top">
+      <div class="checkout-brand"><span class="checkout-mark">B</span><div><strong>Beejak Pay</strong><span>INSTANT DEMO CHECKOUT</span></div></div>
+      <span class="secure-pill">◆ SANDBOX · NO REAL MONEY</span>
+    </div>
+
+    <div class="steps">
+      <div class="step active" data-step="1"><b>1</b><span>Method</span></div>
+      <div class="step-line"></div>
+      <div class="step" data-step="2"><b>2</b><span>Verify</span></div>
+      <div class="step-line"></div>
+      <div class="step" data-step="3"><b>3</b><span>Receipt</span></div>
+    </div>
+
+    <div class="pay-amount-block">
+      <span>Amount payable · {{ invoice['invoice_no'] }}</span>
+      <strong id="checkout-amount">{{ invoice['grand_total']|money(invoice['currency']) }}</strong>
+      <small>{{ amount_words }}</small>
+    </div>
+
+    <div id="pay-panel-method">
+      <div class="method-tabs" role="tablist">
+        <button class="method-tab active" data-method="UPI" role="tab">▦ UPI</button>
+        <button class="method-tab" data-method="CARD" role="tab">▤ Card</button>
+        <button class="method-tab" data-method="NETBANKING" role="tab">▣ NetBanking</button>
+      </div>
+
+      <div class="method-content active" data-content="UPI">
+        <div class="checkout-qr-row">
+          <div class="checkout-qr" id="checkout-qr" data-upi-uri="{{ upi.uri }}"></div>
+          <div class="checkout-qr-copy">
+            <strong>Scan with any UPI app</strong>
+            <p>Amount and invoice number are pre-filled in this QR. GPay, PhonePe, Paytm and BHIM all work.</p>
+            <span class="upi-id">Payee: <b>{{ upi.upi_id }}</b></span>
+            <div class="upi-app-badges">{% for app in upi.apps %}<span>{{ app }}</span>{% endfor %}</div>
+          </div>
+        </div>
+        <label class="field"><span>Or choose your UPI app</span>
+          <select id="upi-app-select">
+            <option value="GPay">Google Pay</option><option value="PhonePe">PhonePe</option>
+            <option value="Paytm">Paytm</option><option value="BHIM">BHIM</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="method-content" data-content="CARD">
+        <label class="field"><span>Test card number</span><input value="4242 4242 4242 4242" readonly></label>
+        <div class="field-grid">
+          <label class="field"><span>Expiry</span><input value="12/29" readonly></label>
+          <label class="field"><span>CVV</span><input value="•••" readonly></label>
+        </div>
+        <p class="sandbox-note">Sandbox card — no real card data is collected or transmitted.</p>
+      </div>
+
+      <div class="method-content" data-content="NETBANKING">
+        <label class="field"><span>Select bank (sandbox)</span>
+          <select><option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Punjab National Bank</option></select>
+        </label>
+        <p class="sandbox-note">Demo bank redirect is simulated locally.</p>
+      </div>
+
+      <button class="btn btn-pay btn-block" id="pay-submit" type="button">Complete Demo Payment · {{ invoice['grand_total']|money(invoice['currency']) }}</button>
+      <p class="checkout-fineprint">By continuing you agree this is a simulated transaction for demonstration only.</p>
+    </div>
+
+    <div id="pay-panel-processing" hidden>
+      <div class="spinner"></div>
+      <h3>Verifying transaction…</h3>
+      <p>Connecting to NPCI sandbox · checking UPI QR & amount</p>
+      <div class="processing-bar"><i></i></div>
+    </div>
+
+    <div id="pay-panel-success" hidden>
+      <div class="success-mark">✓</div>
+      <h3>Payment successful</h3>
+      <p>Invoice <b>{{ invoice['invoice_no'] }}</b> has been marked <b>PAID</b> and the ledger is in sync.</p>
+      <div class="utr-box"><span>TRANSACTION UTR</span><strong id="success-utr">—</strong></div>
+      <div class="success-actions">
+        <a class="btn btn-primary btn-block" id="success-receipt" href="#">View receipt →</a>
+        <a class="btn btn-ghost btn-block" href="{{ url_for('invoices.print_view', invoice_id=invoice['id']) }}">Print paid invoice</a>
+        <a class="btn btn-ghost btn-block" href="{{ url_for('dashboard.index') }}">Back to ledger</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="checkout-preview no-print" aria-label="Invoice being paid">
+    <div class="preview-topline"><span class="preview-label">INVOICE PREVIEW · LIVE STATUS</span><span class="preview-meta">{{ invoice['invoice_no'] }} · {{ invoice['client_name'] }}</span></div>
+    <div class="paper-stage">
+      {% include 'components/invoice_paper.html' %}
+    </div>
+  </section>
+</div>
+
+<script type="application/json" id="pay-state">{{ {'invoice_id': invoice['id'], 'invoice_no': invoice['invoice_no'], 'amount': invoice['grand_total'], 'currency': invoice['currency'], 'status': invoice['status']}|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upiQrEngine.js') }}"></script>
+<script src="{{ url_for('static', filename='js/demoGateway.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{#
+  Shared A4 cotton-paper invoice sheet.
+  Expects: invoice (dict), upi (dict), amount_words (str), currencies (dict).
+  Live builder JS binds every [data-field] node; QR is rendered by upiQrEngine.js.
+#}
+{% set accent = invoice['accent'] or 'emerald' %}
+{% set currency = invoice['currency'] or 'INR' %}
+{% set symbol = currencies[currency]['symbol'] if currency in currencies else '₹' %}
+{% set igst = (invoice['tax_mode']|default('CGST_SGST')) == 'IGST' %}
+{% set paid = invoice['status'] == 'PAID' %}
+<article class="a4-sheet accent-{{ accent }} {{ 'tax-igst' if igst else 'tax-cgst' }} {{ 'is-paid' if paid }}" id="invoice-paper">
+  <div class="paper-inner">
+    <header class="paper-header">
+      <div class="paper-brand">
+        <img class="paper-logo" src="{{ url_for('static', filename='assets/logo-beejak.svg') }}" alt="Beejak Billing Studio">
+        <p class="paper-brand-line">{{ app_tagline }}</p>
+        <p class="paper-brand-line muted">GST · Multi-currency · UPI ready</p>
+      </div>
+      <div class="paper-heading">
+        <span class="paper-kicker">TAX INVOICE / बीजक</span>
+        <h2 data-field="invoice_no">{{ invoice['invoice_no'] }}</h2>
+        <div class="paper-heading-meta">
+          <div><span>Issue date</span><strong data-field="issue_date">{{ invoice['issue_date']|idate }}</strong></div>
+          <div><span>Due date</span><strong data-field="due_date">{{ invoice['due_date']|idate }}</strong></div>
+          <div><span>Currency</span><strong data-field="currency">{{ currency }}</strong></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="paper-parties">
+      <div class="paper-party">
+        <span class="paper-label">BILL TO</span>
+        <strong class="party-name" data-field="client_name">{{ invoice['client_name'] or 'Client name' }}</strong>
+        <span data-field="client_company">{{ invoice['client_company'] }}</span>
+        <span data-field="client_email">{{ invoice['client_email'] }}</span>
+        {% if invoice['client_gstin'] %}<span class="gstin-tag">GSTIN {{ invoice['client_gstin'] }}</span>{% endif %}
+      </div>
+      <div class="paper-party paper-party-right">
+        <span class="paper-label">ISSUED & VERIFIED BY</span>
+        <strong class="party-name">{{ dev_name }}</strong>
+        <span>{{ dev_location }}</span>
+        <span>{{ dev_email }}</span>
+        <span class="gstin-tag">{{ dev_instagram }} · github.com/Rg100152</span>
+      </div>
+    </section>
+
+    <table class="paper-items-table">
+      <thead>
+        <tr>
+          <th class="col-desc">Description</th>
+          <th class="col-qty">Qty</th>
+          <th class="col-rate">Unit price</th>
+          <th class="col-amount">Amount</th>
+        </tr>
+      </thead>
+      <tbody id="paper-items">
+        {% for item in invoice['items'] or [] %}
+        <tr>
+          <td>{{ item['description'] or 'Service' }}</td>
+          <td>{{ item['qty'] }}</td>
+          <td>{{ symbol }}{{ '%.2f'|format(item['unit_price']|float) }}</td>
+          <td>{{ symbol }}{{ '%.2f'|format(item['line_total']|float) }}</td>
+        </tr>
+        {% endfor %}
+        {% if not invoice['items'] %}
+        <tr class="paper-empty-row"><td colspan="4">Add line items in the studio to populate this invoice.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <section class="paper-lower">
+      <div class="paper-notes-col">
+        <div class="paper-notes">
+          <span class="paper-label">NOTES</span>
+          <p data-field="notes">{{ invoice['notes'] }}</p>
+        </div>
+
+        <div class="upi-pay-box" id="upi-pay-box" data-upi-uri="{{ upi.uri }}">
+          <div class="upi-qr-frame" id="upi-qr" aria-label="UPI payment QR code"></div>
+          <div class="upi-copy">
+            <span class="upi-kicker">SCAN & PAY VIA UPI</span>
+            <strong>Pre-filled amount · no typing needed</strong>
+            <span class="upi-amount" data-field="upi_amount">{{ invoice['grand_total']|money(currency) }}</span>
+            <span class="upi-id">Payee ID: <b data-field="upi_id">{{ invoice['upi_id'] }}</b></span>
+            <div class="upi-app-badges">
+              {% for app in upi.apps %}<span>{{ app }}</span>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="amount-in-words">
+          <span class="paper-label">AMOUNT IN WORDS</span>
+          <p data-field="amount_words">{{ amount_words }}</p>
+        </div>
+      </div>
+
+      <div class="paper-totals">
+        <div class="total-row"><span>Subtotal</span><strong data-field="subtotal">{{ invoice['subtotal']|money(currency) }}</strong></div>
+        <div class="total-row discount-row"><span>Discount (<b data-field="discount_pct">{{ invoice['discount_pct'] }}</b>%)</span><strong data-field="discount_amount">−{{ invoice['discount_amount']|money(currency) }}</strong></div>
+        <div class="total-row taxable-row"><span>Taxable amount</span><strong data-field="taxable_amount">{{ (invoice['subtotal']|float - invoice['discount_amount']|float)|money(currency) }}</strong></div>
+        <div class="total-row tax-row cgst-row"><span>CGST (<b data-field="tax_pct">{{ invoice['tax_pct'] }}</b>% / 2)</span><strong data-field="cgst">{{ (invoice['tax_amount']|float / 2)|money(currency) }}</strong></div>
+        <div class="total-row tax-row sgst-row"><span>SGST (<b data-field="tax_pct">{{ invoice['tax_pct'] }}</b>% / 2)</span><strong data-field="sgst">{{ (invoice['tax_amount']|float / 2)|money(currency) }}</strong></div>
+        <div class="total-row tax-row igst-row"><span>IGST (<b data-field="tax_pct">{{ invoice['tax_pct'] }}</b>%)</span><strong data-field="igst">{{ invoice['tax_amount']|money(currency) }}</strong></div>
+        <div class="grand-total-row"><span>GRAND TOTAL</span><strong data-field="grand_total">{{ invoice['grand_total']|money(currency) }}</strong></div>
+        <div class="status-chip on-paper status-{{ invoice['status']|lower }}" data-field="status">{{ invoice['status'] }}</div>
+      </div>
+    </section>
+
+    <footer class="paper-footer">
+      <div class="digital-seal">
+        <span class="seal-ring">BJK<br><small>VERIFIED</small></span>
+        <span class="seal-copy"><strong>{{ dev_name }}</strong><br>Jaunpur, Uttar Pradesh<br><small>Digitally verified invoice</small></span>
+      </div>
+      <div class="paid-seal" id="paid-seal" {% if not paid %}hidden{% endif %}>
+        PAID<br><small data-field="utr">{{ invoice['utr'] or '—' }}</small>
+      </div>
+      <p class="paper-footnote">Generated with Beejak · Smart GST & Multi-Currency Billing Studio · {{ dev_github }}</p>
+    </footer>
+  </div>
+</article>

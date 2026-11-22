@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Beejak · Live Invoice Studio{% endblock %}
+{% block page_title %}Live A4 Invoice Studio{% endblock %}
+{% block body_class %} studio-body{% endblock %}
+
+{% block content %}
+<div class="studio-toolbar">
+  <div class="toolbar-left">
+    <span class="live-pill"><span class="pulse"></span> LIVE A4 MIRROR</span>
+    <span class="toolbar-sub">Every keystroke updates the paper on the right · GST + UPI QR in real time</span>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn btn-ghost" type="button" id="preview-print-top">⎙ Print / Save PDF</button>
+    <button class="btn btn-outline" type="button" id="send-open-top">✉ Send to Client</button>
+    <button class="btn btn-primary" type="submit" form="invoice-form" id="save-top">⇩ Save Invoice</button>
+  </div>
+</div>
+
+<div class="studio" id="studio">
+  <section class="editor-panel" aria-label="Smart billing controls">
+    <form id="invoice-form" method="post"
+          action="{{ url_for('invoices.store') if is_new else url_for('invoices.update', invoice_id=invoice_id) }}">
+      <input type="hidden" name="items" id="items-json" value="[]">
+      <input type="hidden" name="status" id="status-hidden" value="{{ invoice['status'] }}">
+
+      <div class="editor-section">
+        <div class="section-head"><span class="section-index">01</span><div><h3>Invoice identity</h3><p>Numbering, dates & currency</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Invoice number</span><input id="f-invoice-no" name="invoice_no" value="{{ invoice['invoice_no'] }}" placeholder="BJK-2026-104"></label>
+          <label class="field"><span>Currency</span>
+            <select id="f-currency" name="currency">
+              {% for code, meta in currencies.items() %}<option value="{{ code }}" {{ 'selected' if invoice['currency'] == code }}>{{ meta.label }}</option>{% endfor %}
+            </select>
+          </label>
+          <label class="field"><span>Issue date</span><input type="date" id="f-issue-date" name="issue_date" value="{{ invoice['issue_date'] }}"></label>
+          <label class="field"><span>Due date</span><input type="date" id="f-due-date" name="due_date" value="{{ invoice['due_date'] }}"></label>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <div class="section-head"><span class="section-index">02</span><div><h3>Client details</h3><p>Who are we billing?</p></div></div>
+        <label class="field"><span>Quick pick from directory</span>
+          <select id="f-client-pick">
+            <option value="">— New client —</option>
+            {% for c in clients %}<option value="{{ c['id'] }}" data-name="{{ c['name'] }}" data-company="{{ c['company'] }}" data-email="{{ c['email'] }}">{{ c['name'] }} · {{ c['city'] }}</option>{% endfor %}
+          </select>
+        </label>
+        <input type="hidden" name="client_id" id="f-client-id" value="{{ invoice['client_id'] or '' }}">
+        <div class="field-grid">
+          <label class="field"><span>Client name *</span><input id="f-client-name" name="client_name" value="{{ invoice['client_name'] }}" placeholder="e.g. Aarav Infotech" required></label>
+          <label class="field"><span>Company</span><input id="f-client-company" name="client_company" value="{{ invoice['client_company'] }}" placeholder="Registered firm name"></label>
+        </div>
+        <label class="field"><span>Client email</span><input type="email" id="f-client-email" name="client_email" value="{{ invoice['client_email'] }}" placeholder="billing@client.com"></label>
+      </div>
+
+      <div class="editor-section">
+        <div class="section-head"><span class="section-index">03</span><div><h3>Line items</h3><p>Services, quantities & rates</p></div>
+          <button class="mini-add" type="button" id="add-item">＋ Add item</button>
+        </div>
+        <div class="items-head"><span>Description</span><span>Qty</span><span>Unit price</span><span></span></div>
+        <div id="editor-items"></div>
+        <div class="items-foot"><span>Taxable subtotal</span><strong id="editor-subtotal">₹0.00</strong></div>
+      </div>
+
+      <div class="editor-section">
+        <div class="section-head"><span class="section-index">04</span><div><h3>Tax & adjustments</h3><p>GST split and discount</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Discount %</span><input type="number" id="f-discount" name="discount_pct" value="{{ invoice['discount_pct'] }}" min="0" max="100" step="0.5"></label>
+          <label class="field"><span>Tax / GST %</span>
+            <select id="f-tax" name="tax_pct">
+              {% for rate in tax_rates %}<option value="{{ rate }}" {{ 'selected' if invoice['tax_pct']|int == rate }}>{{ rate }}%</option>{% endfor %}
+            </select>
+          </label>
+        </div>
+        <label class="field"><span>Tax mode</span>
+          <select id="f-tax-mode" name="tax_mode">
+            <option value="CGST_SGST" {{ 'selected' if invoice['tax_mode'] != 'IGST' }}>CGST + SGST (intra-state)</option>
+            <option value="IGST" {{ 'selected' if invoice['tax_mode'] == 'IGST' }}>IGST (inter-state)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="editor-section">
+        <div class="section-head"><span class="section-index">05</span><div><h3>UPI & branding</h3><p>Scan-to-pay + paper accent</p></div></div>
+        <label class="field"><span>Payee UPI ID</span><input id="f-upi" name="upi_id" value="{{ invoice['upi_id'] }}" placeholder="rajgautam@upi"></label>
+        <span class="field-hint">QR updates live with amount & invoice number · works offline.</span>
+        <div class="accent-picker">
+          {% for key, meta in accents.items() %}
+          <label class="accent-option">
+            <input type="radio" name="accent" value="{{ key }}" {{ 'checked' if invoice['accent'] == key }}>
+            <span class="accent-swatch" style="--swatch: {{ meta.color }}"></span>
+            <span>{{ meta.label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <div class="section-head"><span class="section-index">06</span><div><h3>Notes</h3><p>Printed at the bottom of the sheet</p></div></div>
+        <label class="field"><span>Client-facing note</span><textarea id="f-notes" name="notes" rows="3">{{ invoice['notes'] }}</textarea></label>
+      </div>
+
+      <div class="editor-footer">
+        <button class="btn btn-primary btn-block" type="submit">Save invoice to ledger ⇩</button>
+        <span class="editor-footer-note">Stored locally in SQLite · database/beejak.db</span>
+      </div>
+    </form>
+  </section>
+
+  <section class="preview-panel" aria-label="Live A4 paper preview">
+    <div class="preview-topline">
+      <span class="preview-label">LIVE PREVIEW · A4 PAPER</span>
+      <span class="preview-meta" id="preview-meta">{{ invoice['invoice_no'] }} · {{ invoice['currency'] }}</span>
+    </div>
+    <div class="paper-stage">
+      {% include 'components/invoice_paper.html' %}
+    </div>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="send-modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Send invoice to client">
+    <div class="modal-header"><div><span class="eyebrow">CLIENT DISPATCH</span><h3>Send invoice to client</h3></div><button class="modal-close" id="send-close">×</button></div>
+    <form method="post" action="{{ url_for('invoices.mark_sent', invoice_id=invoice_id) if invoice_id else '#' }}" id="send-form">
+      <label class="field"><span>Client email</span><input type="email" id="send-email" value="{{ invoice['client_email'] }}" placeholder="client@company.com"></label>
+      <label class="field"><span>Auto-drafted message</span><textarea id="send-message" rows="6">Hi {{ invoice['client_name'] or 'there' }},
+
+Please find your invoice {{ invoice['invoice_no'] }} for {{ invoice['grand_total']|money(invoice['currency']) }} attached. You can also scan the UPI QR on the invoice for instant payment.
+
+Thank you for your business!
+{{ dev_name }} · Jaunpur, Uttar Pradesh</textarea></label>
+      <div class="modal-warning" id="send-warning" hidden>Save this invoice first, then use Send to Client.</div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="send-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="send-confirm">✓ Mark as Sent</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="application/json" id="invoice-state">{{ {'id': invoice_id, 'currency': invoice['currency'], 'tax_mode': invoice['tax_mode'], 'items': invoice['items'], 'status': invoice['status']}|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upiQrEngine.js') }}"></script>
+<script src="{{ url_for('static', filename='js/invoiceBuilder.js') }}"></script>
+{% endblock %}

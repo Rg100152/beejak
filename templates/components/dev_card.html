@@ -1,0 +1,17 @@
+<footer class="dev-footer no-print">
+  <div class="dev-card">
+    <img class="dev-avatar" src="{{ url_for('static', filename='assets/avatar.jpg') }}" alt="{{ dev_name }}">
+    <div class="dev-copy">
+      <span class="eyebrow">ENGINEERED WITH ♥ IN INDIA</span>
+      <strong>{{ dev_name }} <span class="dev-sep">•</span> <span class="muted">{{ dev_location }}</span></strong>
+      <p>{{ dev_tagline }}</p>
+      <div class="dev-links">
+        <a href="mailto:{{ dev_email }}">{{ dev_email }}</a>
+        <a href="https://instagram.com/linux.userraj" target="_blank" rel="noopener">{{ dev_instagram }}</a>
+        <a href="{{ dev_github }}" target="_blank" rel="noopener">github.com/Rg100152</a>
+      </div>
+    </div>
+    <div class="dev-stamp">BJK<br><span>VERIFIED</span></div>
+  </div>
+  <div class="footer-legal">© 2026 Beejak · A Raj Gautam project · No phone numbers, ever.</div>
+</footer>

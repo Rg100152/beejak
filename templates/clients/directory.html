@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Beejak · Client Directory{% endblock %}
+{% block page_title %}Client Directory{% endblock %}
+
+{% block content %}
+<section class="hero-strip compact">
+  <div>
+    <span class="eyebrow">CRM · REGIONAL CLIENTS</span>
+    <h2>People you bill<span class="hero-dot">.</span></h2>
+    <p>{{ clients|length }} clients in the directory · GSTIN-tagged and ready for invoicing.</p>
+  </div>
+  <button class="btn btn-primary" id="add-client-open">＋ Add client</button>
+</section>
+
+<section class="client-layout">
+  <article class="panel client-table-panel">
+    <div class="panel-head"><div><span class="eyebrow">DIRECTORY</span><h3>All clients</h3></div></div>
+    <div class="table-scroll">
+      <table class="ledger-table">
+        <thead><tr><th>Client</th><th>Company</th><th>Location</th><th>GSTIN</th><th class="text-right">Billed</th><th></th></tr></thead>
+        <tbody>
+          {% for c in clients %}
+          <tr class="{{ 'selected-row' if selected and selected['id'] == c['id'] }}">
+            <td><a class="mono-link" href="{{ url_for('clients.directory', id=c['id']) }}">{{ c['name'] }}</a><small>{{ c['email'] }}</small></td>
+            <td>{{ c['company'] }}</td>
+            <td>{{ c['city'] }}</td>
+            <td><span class="gstin-tag">{{ c['gstin'] or '—' }}</span></td>
+            <td class="text-right mono-amount">{{ c['billed_total']|money('INR') }}</td>
+            <td class="text-right"><a class="mini-btn" href="{{ url_for('clients.directory', id=c['id']) }}">Profile</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="empty-cell">No clients yet — add your first one.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <aside class="panel client-profile">
+    {% if selected %}
+      <div class="profile-head">
+        <div class="profile-avatar">{{ selected['name'][:1] }}</div>
+        <div><span class="eyebrow">CLIENT PROFILE</span><h3>{{ selected['name'] }}</h3><p>{{ selected['company'] }}</p></div>
+      </div>
+      <dl class="profile-list">
+        <div><dt>Email</dt><dd>{{ selected['email'] or '—' }}</dd></div>
+        <div><dt>GSTIN</dt><dd class="mono">{{ selected['gstin'] or '—' }}</dd></div>
+        <div><dt>Location</dt><dd>{{ selected['city'] or '—' }}</dd></div>
+        <div><dt>Invoices</dt><dd>{{ client_invoices|length }}</dd></div>
+      </dl>
+      <a class="btn btn-primary btn-block" href="{{ url_for('invoices.create') }}">✎ New invoice for {{ selected['name'].split()[0] }}</a>
+      <h4 class="profile-subhead">Recent invoices</h4>
+      <ul class="profile-invoices">
+        {% for inv in client_invoices %}
+        <li>
+          <a href="{{ url_for('invoices.print_view', invoice_id=inv['id']) }}">{{ inv['invoice_no'] }}</a>
+          <span class="status-chip status-{{ inv['status']|lower }}">{{ inv['status'] }}</span>
+          <strong>{{ inv['grand_total']|money(inv['currency']) }}</strong>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-profile">
+        <div class="empty-glyph">◉</div>
+        <h3>Select a client</h3>
+        <p>Choose a row from the directory to see the profile, GSTIN and billing history.</p>
+      </div>
+    {% endif %}
+  </aside>
+</section>
+
+<div class="modal-backdrop" id="client-modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Add client">
+    <div class="modal-header"><div><span class="eyebrow">NEW CONTACT</span><h3>Add client</h3></div><button class="modal-close" id="client-close">×</button></div>
+    <form method="post" action="{{ url_for('clients.store') }}">
+      <div class="field-grid">
+        <label class="field"><span>Name *</span><input name="name" required placeholder="Client contact name"></label>
+        <label class="field"><span>Company</span><input name="company" placeholder="Firm name"></label>
+      </div>
+      <div class="field-grid">
+        <label class="field"><span>Email</span><input type="email" name="email" placeholder="billing@client.com"></label>
+        <label class="field"><span>City</span><input name="city" placeholder="Jaunpur, UP"></label>
+      </div>
+      <label class="field"><span>GSTIN</span><input name="gstin" placeholder="09AABCA1234K1ZP"></label>
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" id="client-cancel">Cancel</button><button class="btn btn-primary">＋ Add client</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

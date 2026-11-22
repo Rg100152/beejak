@@ -1,0 +1,116 @@
+/* Beejak — realistic warm-ivory A4 cotton-paper invoice sheet */
+.a4-sheet {
+  --accent: #10B981;
+  --accent-soft: rgba(16,185,129,.12);
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, .14), 0 2px 6px rgba(15,23,42,.08);
+  border-radius: 3px;
+  font-family: var(--font);
+  font-size: 12px;
+  line-height: 1.45;
+  position: relative;
+}
+.a4-sheet.accent-navy { --accent: #1E3A8A; --accent-soft: rgba(30,58,138,.1); }
+.a4-sheet.accent-saffron { --accent: #D97706; --accent-soft: rgba(245,158,11,.13); }
+.paper-inner { padding: 16mm 15mm 12mm; min-height: 297mm; display: flex; flex-direction: column; }
+
+.paper-header { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--accent); }
+.paper-logo { width: 200px; max-width: 100%; display: block; }
+.paper-brand-line { color: var(--ink-muted); font-size: 9.5px; margin-top: 4px; }
+.paper-heading { text-align: right; min-width: 235px; }
+.paper-kicker { display: block; color: var(--accent); font-size: 8.5px; font-weight: 900; letter-spacing: .18em; }
+.paper-heading h2 { font-family: var(--mono); font-size: 19px; margin: 5px 0 10px; letter-spacing: -.02em; }
+.paper-heading-meta { display: grid; gap: 3px; }
+.paper-heading-meta div { display: flex; justify-content: space-between; gap: 18px; font-size: 9.5px; }
+.paper-heading-meta span { color: var(--ink-muted); }
+.paper-heading-meta strong { font-weight: 700; }
+
+.paper-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding: 20px 0; border-bottom: 1px solid #E2E8F0; }
+.paper-party { display: flex; flex-direction: column; gap: 3px; font-size: 10px; color: #475569; min-width: 0; }
+.paper-party-right { text-align: right; align-items: flex-end; }
+.paper-label { color: var(--ink-muted); font-size: 8px; font-weight: 900; letter-spacing: .16em; margin-bottom: 4px; }
+.party-name { font-size: 12.5px; color: var(--ink); }
+.gstin-tag { display: inline-block; margin-top: 5px; padding: 3px 7px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); font-size: 8px; font-weight: 700; word-break: break-all; }
+
+.paper-items-table { width: 100%; border-collapse: collapse; margin: 20px 0 8px; table-layout: fixed; }
+.paper-items-table th {
+  padding: 9px 8px; text-align: left;
+  background: var(--accent); color: #fff;
+  font-size: 8.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+}
+.paper-items-table th:first-child { border-radius: 6px 0 0 6px; }
+.paper-items-table th:last-child { border-radius: 0 6px 6px 0; }
+.paper-items-table td { padding: 10px 8px; border-bottom: 1px solid #E8EDF3; font-size: 10px; vertical-align: top; word-break: break-word; }
+.paper-items-table .col-qty, .paper-items-table .col-rate, .paper-items-table .col-amount { text-align: right; width: 78px; }
+.paper-items-table .col-desc { width: auto; }
+.paper-items-table tbody tr:nth-child(even) { background: #FBFBF8; }
+.paper-empty-row td { text-align: center; color: var(--ink-muted); font-style: italic; }
+
+.paper-lower { display: grid; grid-template-columns: 1.05fr .95fr; gap: 24px; margin-top: 12px; flex: 1; }
+.paper-notes-col { display: flex; flex-direction: column; gap: 16px; }
+.paper-notes p { font-size: 9.5px; color: #475569; margin-top: 4px; line-height: 1.6; }
+
+.upi-pay-box { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1.5px dashed var(--accent); border-radius: 10px; background: var(--accent-soft); }
+.upi-qr-frame { width: 86px; height: 86px; min-width: 86px; padding: 5px; border-radius: 7px; background: #fff; box-shadow: 0 2px 8px rgba(15,23,42,.08); }
+.upi-qr-frame img, .upi-qr-frame canvas { width: 100% !important; height: 100% !important; display: block; }
+.upi-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.upi-kicker { color: var(--accent); font-size: 8px; font-weight: 900; letter-spacing: .13em; }
+.upi-copy strong { font-size: 9.5px; line-height: 1.35; }
+.upi-amount { font-family: var(--mono); font-size: 13px; font-weight: 900; color: var(--ink); }
+.upi-copy .upi-id { font-size: 8px; color: var(--ink-muted); }
+.upi-copy .upi-id b { font-family: var(--mono); color: var(--ink); }
+.upi-app-badges span { background: #E2E8F0; color: #334155; padding: 2px 5px; font-size: 7px; border-radius: 4px; font-weight: 800; }
+
+.amount-in-words p { margin-top: 5px; font-size: 9.5px; font-weight: 650; line-height: 1.6; text-transform: capitalize; }
+
+.paper-totals { display: flex; flex-direction: column; gap: 7px; }
+.total-row { display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: #475569; }
+.total-row strong { color: var(--ink); font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+.total-row.discount-row strong { color: #B45309; }
+.tax-igst .cgst-row, .tax-igst .sgst-row { display: none; }
+.tax-cgst .igst-row { display: none; }
+.grand-total-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  margin-top: 6px; padding: 11px 12px; border-radius: 8px;
+  background: var(--accent); color: #fff;
+}
+.grand-total-row span { font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+.grand-total-row strong { font-family: var(--mono); font-size: 15px; }
+.on-paper { align-self: flex-end; margin-top: 4px; }
+.status-paid { color: var(--mint-deep) !important; background: rgba(5,150,105,.12) !important; }
+.on-paper.status-sent { color: #0369A1 !important; background: rgba(56,189,248,.13) !important; }
+.on-paper.status-draft { color: #475569 !important; background: #E2E8F0 !important; }
+
+.paper-footer { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; padding-top: 14px; border-top: 1px solid #E2E8F0; }
+.digital-seal { display: flex; align-items: center; gap: 10px; }
+.seal-ring {
+  width: 52px; height: 52px; min-width: 52px; border-radius: 50%;
+  display: grid; place-content: center; text-align: center;
+  border: 2px dashed var(--accent); color: var(--accent);
+  font-size: 13px; font-weight: 900; line-height: 1; transform: rotate(-9deg);
+}
+.seal-ring small { font-size: 5.5px; letter-spacing: .12em; }
+.seal-copy { font-size: 9px; color: #475569; line-height: 1.5; }
+.seal-copy strong { color: var(--ink); font-size: 10px; }
+.seal-copy small { color: var(--ink-muted); font-size: 8px; }
+.paper-footnote { text-align: right; color: var(--ink-muted); font-size: 7.5px; line-height: 1.6; max-width: 230px; }
+.paid-seal {
+  position: absolute; right: 6px; top: -26px;
+  padding: 8px 18px; border: 3px solid var(--mint-deep); border-radius: 8px;
+  color: var(--mint-deep); font-size: 22px; font-weight: 900; letter-spacing: .12em;
+  transform: rotate(-11deg); background: rgba(255,253,249,.82); text-align: center;
+  box-shadow: 0 4px 14px rgba(5,150,105,.15);
+}
+.paid-seal[hidden] { display: none; }
+.paid-seal small { display: block; font-family: var(--mono); font-size: 8px; letter-spacing: 0; }
+
+@media (max-width: 900px) {
+  .a4-sheet { width: 100%; min-height: auto; }
+  .paper-inner { min-height: auto; padding: 22px; }
+  .paper-lower, .paper-parties { grid-template-columns: 1fr; }
+  .paper-party-right { text-align: left; align-items: flex-start; }
+}

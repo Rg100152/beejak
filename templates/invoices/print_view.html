@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{{ invoice['invoice_no'] }} · Beejak Invoice{% endblock %}
+{% block page_title %}Invoice {{ invoice['invoice_no'] }}{% endblock %}
+{% block content_print_class %}{% endblock %}
+
+{% block content %}
+<div class="print-toolbar no-print">
+  <div><span class="eyebrow">CLEAN A4 PRINT VIEW</span><h2>{{ invoice['invoice_no'] }} · {{ invoice['client_name'] }}</h2></div>
+  <div class="toolbar-actions">
+    <a class="btn btn-ghost" href="{{ url_for('invoices.edit', invoice_id=invoice['id']) }}">✎ Back to studio</a>
+    {% if invoice['status'] != 'PAID' %}<a class="btn btn-outline" href="{{ url_for('payments.checkout', invoice_id=invoice['id']) }}">₹ Pay Demo</a>{% endif %}
+    <button class="btn btn-primary" type="button" onclick="window.print()">⎙ Print / Save PDF</button>
+  </div>
+</div>
+<div class="print-stage">
+  {% include 'components/invoice_paper.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/upiQrEngine.js') }}"></script>{% endblock %}

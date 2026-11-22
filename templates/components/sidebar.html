@@ -1,0 +1,36 @@
+<aside class="nav-rail no-print" id="nav-rail">
+  <a class="rail-brand" href="{{ url_for('dashboard.index') }}">
+    <img src="{{ url_for('static', filename='assets/logo-beejak.svg') }}" alt="Beejak">
+  </a>
+  <div class="rail-divider"></div>
+  <nav class="rail-nav">
+    <a class="rail-link {{ 'active' if active_nav|default('') == 'dashboard' }}" href="{{ url_for('dashboard.index') }}">
+      <span class="rail-glyph">▦</span><span class="rail-text">Overview</span>
+    </a>
+    <a class="rail-link {{ 'active' if active_nav|default('') == 'invoices' }}" href="{{ url_for('invoices.create') }}">
+      <span class="rail-glyph">✎</span><span class="rail-text">Invoice Studio</span>
+    </a>
+    <a class="rail-link {{ 'active' if active_nav|default('') == 'clients' }}" href="{{ url_for('clients.directory') }}">
+      <span class="rail-glyph">◉</span><span class="rail-text">Clients</span>
+    </a>
+    <a class="rail-link {{ 'active' if active_nav|default('') == 'payments' }}" href="{{ url_for('payments.checkout', invoice_id=1) }}">
+      <span class="rail-glyph">₹</span><span class="rail-text">Pay Sandbox</span>
+    </a>
+  </nav>
+  <div class="rail-divider"></div>
+  <nav class="rail-nav">
+    <a class="rail-link" href="{{ url_for('api.export_csv') }}">
+      <span class="rail-glyph">⇩</span><span class="rail-text">CSV Export</span>
+    </a>
+    <a class="rail-link" href="{{ url_for('dashboard.index', status='PAID') }}" title="Settled invoices">
+      <span class="rail-glyph">◈</span><span class="rail-text">Receipts</span>
+    </a>
+  </nav>
+  <div class="rail-spacer"></div>
+  <div class="rail-bottom">
+    <div class="rail-badge"><span class="pulse"></span><span class="rail-text">Sandbox live</span></div>
+    <a class="rail-link" href="{{ dev_github }}" target="_blank" rel="noopener">
+      <span class="rail-glyph">⌘</span><span class="rail-text">@Rg100152</span>
+    </a>
+  </div>
+</aside>

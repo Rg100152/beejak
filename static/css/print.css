@@ -1,0 +1,65 @@
+/* Beejak — crisp A4 print / Save-as-PDF rules */
+@page { size: A4 portrait; margin: 0; }
+
+@media print {
+  html, body {
+    background: #fff !important;
+    color: #0F172A !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+  }
+  .no-print,
+  .nav-rail,
+  .topbar,
+  .toast-stack,
+  .dev-footer,
+  .modal-backdrop,
+  .studio-toolbar,
+  .print-toolbar,
+  .editor-panel,
+  .preview-topline,
+  .checkout-card {
+    display: none !important;
+  }
+  .app-shell, .app-main, .content-area, .studio, .checkout-layout,
+  .print-stage, .paper-stage {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    width: 210mm !important;
+  }
+  .a4-sheet {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #FFFDF9 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .a4-sheet, .paper-inner { min-height: 0 !important; }
+  .a4-sheet { font-size: 10.5px !important; }
+  .paper-inner { padding: 9mm 11mm 7mm; }
+  .paper-header { padding-bottom: 10px; }
+  .paper-parties { padding: 12px 0; }
+  .paper-items-table { margin: 12px 0 6px; }
+  .paper-items-table td { padding: 7px 6px; }
+  .paper-lower { margin-top: 8px; }
+  .paper-footer { margin-top: 12px; padding-top: 8px; }
+  .upi-pay-box { padding: 8px; }
+  .upi-qr-frame { width: 70px; height: 70px; min-width: 70px; }
+  a { text-decoration: none !important; }
+  .paid-seal, .digital-seal, .upi-pay-box, .paper-items-table th {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

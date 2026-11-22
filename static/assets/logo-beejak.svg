@@ -1,0 +1,15 @@
+<svg width="245" height="52" viewBox="0 0 245 52" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Beejak Billing Studio">
+  <defs>
+    <linearGradient id="beejakGold" x1="20" y1="8" x2="40" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="6" width="40" height="40" rx="12" fill="#0F172A" stroke="#10B981" stroke-width="2.2"/>
+  <path d="M15 14H28L33 19V38H15V14Z" stroke="#38BDF8" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="19" y1="23" x2="29" y2="23" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+  <line x1="19" y1="28" x2="29" y2="28" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="27" cy="33" r="2.2" fill="url(#beejakGold)"/>
+  <text x="54" y="29" fill="#0F172A" font-family="system-ui, sans-serif" font-weight="900" font-size="22" letter-spacing="0.5">Bee<tspan fill="#059669">jak</tspan></text>
+  <text x="55" y="42" fill="#64748B" font-family="system-ui, sans-serif" font-weight="600" font-size="9.5" letter-spacing="1.5">BILLING STUDIO • JAUNPUR, UP</text>
+</svg>

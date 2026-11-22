@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Beejak — Smart GST & Multi-Currency Invoice Generator with live A4 preview, UPI QR and demo payments.">
+  <title>{% block title %}Beejak · Billing Studio{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo-beejak.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/invoice_paper.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
+</head>
+<body class="app-shell{% block body_class %}{% endblock %}">
+  {% include 'components/sidebar.html' %}
+  <div class="app-main" id="app-main">
+    {% include 'components/navbar.html' %}
+    <main class="content-area {% block content_print_class %}no-print{% endblock %}" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+    <div class="no-print">{% include 'components/dev_card.html' %}</div>
+  </div>
+  {% include 'components/toast_alerts.html' %}
+
+  <script src="{{ url_for('static', filename='js/vendor/qrcode.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/core.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

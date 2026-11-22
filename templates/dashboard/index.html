@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Beejak · Revenue Ledger{% endblock %}
+{% block page_title %}Billing & Revenue Ledger{% endblock %}
+{% block active_nav %}dashboard{% endblock %}
+
+{% block content %}
+<section class="hero-strip">
+  <div>
+    <span class="eyebrow">NEO-ROYAL FINTECH VAULT · LIVE</span>
+    <h2>Your billing command centre<span class="hero-dot">.</span></h2>
+    <p>Track collections, stamp payments and build crisp GST invoices — all from one obsidian workspace.</p>
+  </div>
+  <div class="hero-actions">
+    <a class="btn btn-ghost" href="{{ url_for('api.export_csv') }}">⇩ Export CSV</a>
+    <a class="btn btn-primary" href="{{ url_for('invoices.create') }}">✎ Create Invoice</a>
+  </div>
+</section>
+
+<section class="kpi-grid">
+  <article class="kpi-card kpi-indigo">
+    <div class="kpi-head"><span>Total Invoiced</span><span class="kpi-glyph">▤</span></div>
+    <strong class="kpi-value">{{ kpis.total_invoiced|money('INR') }}</strong>
+    <div class="kpi-foot"><span class="trend">+{{ kpis.invoice_count }} invoices</span><span>All currencies converted at face value</span></div>
+  </article>
+  <article class="kpi-card kpi-mint">
+    <div class="kpi-head"><span>Paid Revenue</span><span class="kpi-glyph">✓</span></div>
+    <strong class="kpi-value">{{ kpis.paid_revenue|money('INR') }}</strong>
+    <div class="kpi-foot"><span class="trend">{{ kpis.collection_rate }}% collected</span><span>{{ kpis.paid_count }} settled invoices</span></div>
+  </article>
+  <article class="kpi-card kpi-amber">
+    <div class="kpi-head"><span>Pending Dues</span><span class="kpi-glyph">◷</span></div>
+    <strong class="kpi-value">{{ kpis.pending_dues|money('INR') }}</strong>
+    <div class="kpi-foot"><span class="trend warn">{{ kpis.sent_count }} sent · {{ kpis.draft_count }} draft</span><span>Awaiting client action</span></div>
+  </article>
+  <article class="kpi-card kpi-rose">
+    <div class="kpi-head"><span>Overdue Count</span><span class="kpi-glyph">!</span></div>
+    <strong class="kpi-value">{{ kpis.overdue_count }}</strong>
+    <div class="kpi-foot"><span class="trend bad">Needs follow-up</span><span>Past due date, not paid</span></div>
+  </article>
+</section>
+
+<section class="analytics-grid">
+  <article class="panel chart-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">REVENUE PULSE</span><h3>Billing vs. collected</h3></div>
+      <div class="chart-legend"><span class="dot dot-billed"></span>Billed <span class="dot dot-collected"></span>Collected</div>
+    </div>
+    <canvas id="revenue-chart" height="200" data-labels='{{ chart.labels|tojson }}' data-billed='{{ chart.billed|tojson }}' data-collected='{{ chart.collected|tojson }}'></canvas>
+  </article>
+  <article class="panel status-panel">
+    <div class="panel-head"><div><span class="eyebrow">WORKFLOW</span><h3>Invoice status</h3></div></div>
+    <div class="status-visual">
+      <canvas id="status-chart" width="150" height="150" data-breakdown='{{ breakdown|tojson }}'></canvas>
+      <ul class="status-legend">
+        <li><span class="dot status-dot-paid"></span> Paid <b>{{ kpis.paid_count }}</b></li>
+        <li><span class="dot status-dot-sent"></span> Sent <b>{{ kpis.sent_count }}</b></li>
+        <li><span class="dot status-dot-draft"></span> Draft <b>{{ kpis.draft_count }}</b></li>
+        <li><span class="dot status-dot-overdue"></span> Overdue <b>{{ kpis.overdue_count }}</b></li>
+      </ul>
+    </div>
+  </article>
+  <article class="panel aging-panel">
+    <div class="panel-head"><div><span class="eyebrow">COLLECTIONS</span><h3>Outstanding aging</h3></div></div>
+    <div class="aging-bars">
+      {% for label, key in [('Current','current'),('1–30 days','1_30'),('31–60 days','31_60'),('60+ days','60_plus')] %}
+      <div class="aging-row">
+        <span>{{ label }}</span>
+        <div class="aging-track"><i style="width: {{ [aging[key] / ([kpis.pending_dues, 1]|max) * 100, 3]|max|round|int }}%"></i></div>
+        <strong>{{ aging[key]|money('INR') }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="panel ledger-panel">
+  <div class="panel-head ledger-head">
+    <div><span class="eyebrow">BILLING LEDGER</span><h3>All invoices <span class="count-pill">{{ invoices|length }}</span></h3></div>
+    <div class="filter-tabs">
+      {% for item in ['', 'PAID', 'SENT', 'DRAFT', 'OVERDUE'] %}
+        {% set label = item|title if item else 'All' %}
+        <a class="filter-tab {{ 'active' if status_filter == item }}" href="{{ url_for('dashboard.index', status=item, q=search) }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="ledger-table">
+      <thead>
+        <tr>
+          <th>Invoice</th><th>Client</th><th>Issued</th><th>Due</th>
+          <th class="text-right">Amount</th><th>Status</th><th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td><a class="mono-link" href="{{ url_for('invoices.print_view', invoice_id=inv['id']) }}">{{ inv['invoice_no'] }}</a><small>{{ inv['currency'] }}</small></td>
+          <td><strong>{{ inv['client_name'] }}</strong><small>{{ inv['client_company'] }}</small></td>
+          <td>{{ inv['issue_date']|idate }}</td>
+          <td>{{ inv['due_date']|idate }}<small class="{{ 'due-bad' if inv['status'] != 'PAID' and inv['due_date'] < now_date }}">{{ due_label(inv['due_date'], inv['status']) }}</small></td>
+          <td class="text-right mono-amount">{{ inv['grand_total']|money(inv['currency']) }}</td>
+          <td>
+            <form method="post" action="{{ url_for('invoices.change_status', invoice_id=inv['id']) }}" class="status-form">
+              <select name="status" class="status-select status-{{ inv['status']|lower }}" onchange="this.form.submit()" aria-label="Change invoice status">
+                {% for option in ['DRAFT','SENT','PAID','OVERDUE'] %}
+                <option value="{{ option }}" {{ 'selected' if option == inv['status'] }}>{{ option }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </td>
+          <td class="text-right">
+            <div class="row-actions">
+              {% if inv['status'] != 'PAID' %}
+              <a class="mini-btn mini-pay" href="{{ url_for('payments.checkout', invoice_id=inv['id']) }}">Pay Demo</a>
+              {% endif %}
+              <a class="mini-btn" href="{{ url_for('invoices.edit', invoice_id=inv['id']) }}">Edit</a>
+              <a class="mini-btn" href="{{ url_for('invoices.print_view', invoice_id=inv['id']) }}">Print</a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty-cell">No invoices found. <a href="{{ url_for('invoices.create') }}">Create your first invoice →</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/charts.js') }}"></script>{% endblock %}
